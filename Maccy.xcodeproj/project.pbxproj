@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		306CD8AD26A5CD7F0052D348 /* KCKeyboardTap.m in Sources */ = {isa = PBXBuildFile; fileRef = 306CD8AC26A5CD7F0052D348 /* KCKeyboardTap.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		306CD8B026A5CDAD0052D348 /* KCKeystroke.m in Sources */ = {isa = PBXBuildFile; fileRef = 306CD8AF26A5CDAD0052D348 /* KCKeystroke.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		306CD8B626A5E28E0052D348 /* KCController.m in Sources */ = {isa = PBXBuildFile; fileRef = 306CD8B426A5E28D0052D348 /* KCController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4762D6972467226100B3A2BA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4762D6992467226100B3A2BA /* Localizable.strings */; };
 		DA009931256411F90030E697 /* appcast.xml in Resources */ = {isa = PBXBuildFile; fileRef = DA00992C256411F90030E697 /* appcast.xml */; };
 		DA009932256411F90030E697 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DA00992D256411F90030E697 /* README.md */; };
@@ -135,6 +138,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		306CD8AA26A5CD7E0052D348 /* Maccy-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Maccy-Bridging-Header.h"; sourceTree = "<group>"; };
+		306CD8AB26A5CD7F0052D348 /* KCKeyboardTap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KCKeyboardTap.h; sourceTree = "<group>"; };
+		306CD8AC26A5CD7F0052D348 /* KCKeyboardTap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KCKeyboardTap.m; sourceTree = "<group>"; };
+		306CD8AE26A5CDAD0052D348 /* KCKeystroke.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KCKeystroke.h; sourceTree = "<group>"; };
+		306CD8AF26A5CDAD0052D348 /* KCKeystroke.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KCKeystroke.m; sourceTree = "<group>"; };
+		306CD8B426A5E28D0052D348 /* KCController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KCController.m; sourceTree = "<group>"; };
+		306CD8B526A5E28E0052D348 /* KCController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KCController.h; sourceTree = "<group>"; };
 		4762D6982467226100B3A2BA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4762D69A2467226400B3A2BA /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4DC4D10F252713D700FE5FAC /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/AdvancedPreferenceViewController.strings; sourceTree = "<group>"; };
@@ -274,6 +284,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		306CD8B726A5E2970052D348 /* KeystrokeDetection */ = {
+			isa = PBXGroup;
+			children = (
+				306CD8B526A5E28E0052D348 /* KCController.h */,
+				306CD8B426A5E28D0052D348 /* KCController.m */,
+				306CD8AB26A5CD7F0052D348 /* KCKeyboardTap.h */,
+				306CD8AC26A5CD7F0052D348 /* KCKeyboardTap.m */,
+				306CD8AE26A5CDAD0052D348 /* KCKeystroke.h */,
+				306CD8AF26A5CDAD0052D348 /* KCKeystroke.m */,
+			);
+			path = KeystrokeDetection;
+			sourceTree = "<group>";
+		};
 		C2D16D1C2EE365D52E1EE446 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -382,6 +405,7 @@
 				DAF65F4424D396D400F3978F /* HistoryMenuItem */,
 				DA181178247D150B00066D55 /* Preferences */,
 				DA21AD3C249E85BD003E7C98 /* Sounds */,
+				306CD8B726A5E2970052D348 /* KeystrokeDetection */,
 				DA246D601E56C9EA001E40F3 /* Application.xib */,
 				DA6373971E4AB9BB00263391 /* Assets.xcassets */,
 				DAB8CE4124E368F200A2500E /* container-migration.plist */,
@@ -412,6 +436,7 @@
 				DAFE2DD9268A521A00990986 /* String+Shortened.swift */,
 				DA81D673252A056B009977BC /* Throttler.swift */,
 				DA2B0AF1234201E500EFAD72 /* UserDefaults+Configuration.swift */,
+				306CD8AA26A5CD7E0052D348 /* Maccy-Bridging-Header.h */,
 			);
 			path = Maccy;
 			sourceTree = "<group>";
@@ -518,7 +543,7 @@
 					};
 					DAEE38421E3DBEB100DD2966 = {
 						CreatedOnToolsVersion = 8.2.1;
-						LastSwiftMigration = 1020;
+						LastSwiftMigration = 1150;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -640,6 +665,8 @@
 				DA20EBB0268E253E0032D360 /* IgnorePasteboardTypesViewController.swift in Sources */,
 				DAF65F4924D396FE00F3978F /* PasteMenuItem.swift in Sources */,
 				DA57C64E249E2A550032707A /* MenuFooter.swift in Sources */,
+				306CD8B626A5E28E0052D348 /* KCController.m in Sources */,
+				306CD8B026A5CDAD0052D348 /* KCKeystroke.m in Sources */,
 				DAB65DFF2440AE29000AECA8 /* CoreDataManager.swift in Sources */,
 				DA2B0AF2234201E500EFAD72 /* UserDefaults+Configuration.swift in Sources */,
 				DA0EF1881E444B2A00E58577 /* Clipboard.swift in Sources */,
@@ -665,6 +692,7 @@
 				DAEE38471E3DBEB100DD2966 /* AppDelegate.swift in Sources */,
 				DA181177247D14DA00066D55 /* PreferencePane.Identifier+Panes.swift in Sources */,
 				DAE28500232257D20080E394 /* ColorImage.swift in Sources */,
+				306CD8AD26A5CD7F0052D348 /* KCKeyboardTap.m in Sources */,
 				DAB65DFD2440AD63000AECA8 /* Storage.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -984,11 +1012,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Maccy/Maccy.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = MN3X4648SC;
+				DEVELOPMENT_TEAM = 86HDH9K924;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1004,6 +1032,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.p0deje.Maccy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "Maccy/Maccy-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -1016,11 +1045,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Maccy/Maccy.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = MN3X4648SC;
+				DEVELOPMENT_TEAM = 86HDH9K924;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1036,6 +1065,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.p0deje.Maccy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "Maccy/Maccy-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -1119,7 +1149,7 @@
 			repositoryURL = "https://github.com/sindresorhus/Preferences";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.2.0;
+				minimumVersion = 2.0.1;
 			};
 		};
 		DA5154D62564102900C01004 /* XCRemoteSwiftPackageReference "Sauce" */ = {

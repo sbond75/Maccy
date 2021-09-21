@@ -4,11 +4,43 @@ import LoginServiceKit
 import Preferences
 
 // swiftlint:disable type_body_length
-class Maccy: NSObject {
+class Maccy: NSObject, KCControllerDelegate {
+    // MARK: KCControllerDelegate
+    
+    func noteKeyEvent(_ keystroke: KCKeystroke!) {
+        // Check if this is a paste keystroke.
+        
+        // This is a little nasty. In Chrome (and presumably many applications), the actual paste will usually not occur unless Command is the *only* modifier key pressed, but in some text fields it will occur even with shift, command, and control all pressed (but not alt). So we will simply check for Command-V since that is the proper way to paste, and more keys should *not* count as a paste. This is ok because if we don't record it as pressed, that's not as bad as if we *do* record it as pressed when in reality it didn't get pasted.
+        // Sometimes, even Shift doesn't paste, so we exclude that too.
+        // TODO: Is caps lock included in `.modifiers` if just pressed or just if currently on?
+        if keystroke.modifiers == .command {
+            if keystroke.charactersIgnoringModifiers.lowercased() == "v" { //keystroke.charactersIgnoringModifiers.contains(where: {$0.lowercased() == "v"}) {
+                // Then this is a paste keystroke
+                
+                // Clear numCopiesMadeSinceLastPaste
+                numCopiesMadeSinceLastPaste = 0
+            }
+        }
+        else if keystroke.modifiers == .control {
+            if keystroke.charactersIgnoringModifiers.lowercased() == "y" {
+                // Then this is an Emacs yank command (paste in Emacs)
+                
+                // Clear numCopiesMadeSinceLastPaste
+                numCopiesMadeSinceLastPaste = 0
+            }
+        }
+    }
+    
+    func noteFlagsChanged(_ flags: UInt32) {
+        // Do nothing
+    }
+    
+    // MARK: Etc.
+    
   static public var returnFocusToPreviousApp = true
 
   @objc public let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-  private let statusItemTitleMaxLength = 20
+  private let statusItemTitleMaxLength = 6 //20
 
   private let about = About()
   private let clipboard = Clipboard()
@@ -16,6 +48,18 @@ class Maccy: NSObject {
   private var menu: Menu!
   private var menuLoader: MenuLoader!
   private var window: NSWindow!
+    private var kcController = KCController()
+    private var numCopiesMadeSinceLastPaste: UInt = 0 {
+        didSet {
+            if (numCopiesMadeSinceLastPaste == 0) {
+                // Blue icon
+                
+            }
+            else {
+                // Red icon
+            }
+        }
+    }
 
   private let carbonMenuWindowClass = "NSStatusBarWindow"
   private var clearAlert: NSAlert {
@@ -136,7 +180,16 @@ class Maccy: NSObject {
     clipboard.onNewCopy(history.add)
     clipboard.onNewCopy(menu.add)
     clipboard.onNewCopy(updateMenuTitle)
+    clipboard.onNewCopy({ (item: HistoryItem?) in
+        // Increment numCopiesMadeSinceLastPaste
+        self.numCopiesMadeSinceLastPaste += 1;
+    })
     clipboard.startListening()
+    
+    // Register handler for when we paste with Command-V, Command-Shift-V, or Ctrl-Y (for Emacs) //
+    kcController.setDelegate(self)
+    kcController.startCapturing()
+    // //
 
     populateHeader()
     populateItems()
@@ -242,7 +295,8 @@ class Maccy: NSObject {
       title = item.title
     }
 
-    statusItem.button?.title = String(title.prefix(statusItemTitleMaxLength))
+    statusItem.button?.title = "\(String(title.prefix(statusItemTitleMaxLength))) \(numCopiesMadeSinceLastPaste)"
+    statusItem.button?.contentTintColor = numCopiesMadeSinceLastPaste == 0 ? NSColor.blue : NSColor.orange
   }
 
   private func simulateStatusItemClick() {

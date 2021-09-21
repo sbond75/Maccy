@@ -3,8 +3,10 @@ import AppKit
 class History {
   public var all: [HistoryItem] {
     var unpinned = HistoryItem.unpinned()
-    while unpinned.count > UserDefaults.standard.size {
-      remove(unpinned.removeLast())
+    if UserDefaults.standard.size != -1 { // If history removal is not disabled
+        while unpinned.count > UserDefaults.standard.size {
+          remove(unpinned.removeLast())
+        }
     }
 
     return HistoryItem.all()
