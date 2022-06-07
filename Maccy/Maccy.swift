@@ -295,7 +295,9 @@ class Maccy: NSObject, KCControllerDelegate {
       title = item.title
     }
 
-    statusItem.button?.title = "\(String(title.prefix(statusItemTitleMaxLength))) \(numCopiesMadeSinceLastPaste)"
+    let convertToLeetCode = true // Configurable
+    let maybeLeet = convertToLeetCode ? leet : {$0}
+    statusItem.button?.title = "\(maybeLeet(String(title.prefix(statusItemTitleMaxLength)))) \(numCopiesMadeSinceLastPaste)"
     statusItem.button?.contentTintColor = numCopiesMadeSinceLastPaste == 0 ? NSColor.blue : NSColor.orange
   }
 
