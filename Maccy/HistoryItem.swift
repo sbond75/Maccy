@@ -26,6 +26,7 @@ class HistoryItem: NSManagedObject {
   public static func all() -> [HistoryItem] {
     let fetchRequest = NSFetchRequest<HistoryItem>(entityName: "HistoryItem")
     fetchRequest.sortDescriptors = [HistoryItem.sortByFirstCopiedAt]
+    //fetchRequest.fetchLimit = 1000;
     do {
       return try CoreDataManager.shared.viewContext.fetch(fetchRequest)
     } catch {

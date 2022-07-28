@@ -2,12 +2,12 @@ import AppKit
 
 class History {
   public var all: [HistoryItem] {
-    var unpinned = HistoryItem.unpinned()
-    if UserDefaults.standard.size != -1 { // If history removal is not disabled
-        while unpinned.count > UserDefaults.standard.size {
-          remove(unpinned.removeLast())
-        }
-    }
+//    var unpinned = HistoryItem.unpinned()
+//    if UserDefaults.standard.size != -1 { // If history removal is not disabled
+//        while unpinned.count > UserDefaults.standard.size {
+//          remove(unpinned.removeLast())
+//        }
+//    }
 
     return HistoryItem.all()
   }
@@ -46,11 +46,11 @@ class History {
   }
 
   func clearUnpinned() {
-    all.filter({ $0.pin == nil }).forEach(remove(_:))
+    //all.filter({ $0.pin == nil }).forEach(remove(_:))
   }
 
   func clear() {
-    all.forEach(remove(_:))
+    //all.forEach(remove(_:))
   }
 
   private func findSimilarItem(_ item: HistoryItem) -> HistoryItem? {
