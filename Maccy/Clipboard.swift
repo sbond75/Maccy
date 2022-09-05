@@ -19,6 +19,7 @@ class Clipboard {
   private var changeCount: Int
 
   private let dynamicTypePrefix = "dyn."
+  private let microsoftSourcePrefix = "com.microsoft.ole.source."
   private let supportedTypes: Set = [
     NSPasteboard.PasteboardType.fileURL,
     NSPasteboard.PasteboardType.png,
@@ -32,6 +33,7 @@ class Clipboard {
 
   private var accessibilityAlert: NSAlert {
     let alert = NSAlert()
+    alert.accessoryView = acccessibilityInsturctionsView
     alert.alertStyle = .warning
     alert.messageText = NSLocalizedString("accessibility_alert_message", comment: "")
     alert.informativeText = NSLocalizedString("accessibility_alert_comment", comment: "")
@@ -41,6 +43,12 @@ class Clipboard {
     return alert
   }
   private var accessibilityAllowed: Bool { AXIsProcessTrustedWithOptions(nil) }
+  private lazy var acccessibilityInsturctionsView: NSImageView = {
+    let view = NSImageView(frame: NSRect(x: 0, y: 0, width: 300, height: 250))
+    view.animates = true
+    view.image = NSImage(named: "AccessibilityInstructions.gif")
+    return view
+  }()
   private let accessibilityURL = URL(
     string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
   )
@@ -59,6 +67,12 @@ class Clipboard {
                          selector: #selector(checkForChangesInPasteboard),
                          userInfo: nil,
                          repeats: true)
+  }
+
+  func copy(_ string: String) {
+    pasteboard.clearContents()
+    pasteboard.setString(string, forType: .string)
+    checkForChangesInPasteboard()
   }
 
   func copy(_ item: HistoryItem, removeFormatting: Bool = false) {
@@ -94,6 +108,9 @@ class Clipboard {
       return
     }
 
+    // Add flag that left/right modifier key has been pressed.
+    // See https://github.com/TermiT/Flycut/pull/18 for details.
+    let cmdFlag = CGEventFlags(rawValue: UInt64(NSEvent.ModifierFlags([.command]).rawValue) | 0x000008)
     let vCode = Sauce.shared.keyCode(by: .v)
     let source = CGEventSource(stateID: .combinedSessionState)
     // Disable local keyboard events while pasting
@@ -102,8 +119,8 @@ class Clipboard {
 
     let keyVDown = CGEvent(keyboardEventSource: source, virtualKey: vCode, keyDown: true)
     let keyVUp = CGEvent(keyboardEventSource: source, virtualKey: vCode, keyDown: false)
-    keyVDown?.flags = .maskCommand
-    keyVUp?.flags = .maskCommand
+    keyVDown?.flags = cmdFlag
+    keyVUp?.flags = cmdFlag
     keyVDown?.post(tap: .cgAnnotatedSessionEventTap)
     keyVUp?.post(tap: .cgAnnotatedSessionEventTap)
   }
@@ -116,6 +133,12 @@ class Clipboard {
 
     if UserDefaults.standard.ignoreEvents {
       changeCount = pasteboard.changeCount
+
+      if UserDefaults.standard.ignoreOnlyNextEvent {
+        UserDefaults.standard.ignoreEvents = false
+        UserDefaults.standard.ignoreOnlyNextEvent = false
+      }
+
       return
     }
 
@@ -147,10 +170,10 @@ class Clipboard {
 
       let contents = types
         .subtracting(disabledTypes)
-        .filter { !$0.rawValue.starts(with: dynamicTypePrefix) }
+        .filter { !$0.rawValue.starts(with: dynamicTypePrefix) && !$0.rawValue.starts(with: microsoftSourcePrefix) }
         .map { HistoryItemContent(type: $0.rawValue, value: item.data(forType: $0)) }
 
-      let historyItem = HistoryItem(contents: contents)
+      let historyItem = HistoryItem(contents: contents, application: sourceApp?.bundleIdentifier)
 
       onNewCopyHooks.forEach({ $0(historyItem) })
     })
@@ -180,5 +203,6 @@ class Clipboard {
         NSWorkspace.shared.open(url)
       }
     }
+    Maccy.returnFocusToPreviousApp = true
   }
 }

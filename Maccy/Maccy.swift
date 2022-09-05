@@ -33,16 +33,13 @@ class Maccy: NSObject {
   private lazy var preferencesWindowController = PreferencesWindowController(
     preferencePanes: [
       GeneralPreferenceViewController(),
+      StoragePreferenceViewController(),
       AppearancePreferenceViewController(),
       PinsPreferenceViewController(),
       IgnorePreferenceViewController(),
       AdvancedPreferenceViewController()
     ]
   )
-
-  private var filterMenuRect: NSRect {
-    return NSRect(x: 0, y: 0, width: menu.menuWidth, height: UserDefaults.standard.hideSearch ? 1 : 29)
-  }
 
   private var enabledPasteboardTypesObserver: NSKeyValueObservation?
   private var ignoreEventsObserver: NSKeyValueObservation?
@@ -84,21 +81,27 @@ class Maccy: NSObject {
   }
 
   func popUp() {
+    // Grab focused window frame before changing focus
+    let windowFrame = NSWorkspace.shared.frontmostApplication?.windowFrame
+
     withFocus {
       switch UserDefaults.standard.popupPosition {
       case "center":
-        if let screen = NSScreen.main {
-          let topLeftX = (screen.frame.width - self.menu.size.width) / 2 + screen.frame.origin.x
-          var topLeftY = (screen.frame.height + self.menu.size.height) / 2 - screen.frame.origin.y
-          if screen.frame.height < self.menu.size.height {
-            topLeftY = screen.frame.origin.y
-          }
+        if let frame = NSScreen.main?.visibleFrame {
           self.linkingMenuToStatusItem {
-            self.menu.popUp(positioning: nil, at: NSPoint(x: topLeftX + 1.0, y: topLeftY + 1.0), in: nil)
+            self.menu.popUp(positioning: nil, at: NSRect.centered(ofSize: self.menu.size, in: frame).origin, in: nil)
           }
         }
       case "statusItem":
         self.simulateStatusItemClick()
+      case "window":
+        if let frame = windowFrame {
+          self.linkingMenuToStatusItem {
+            self.menu.popUp(positioning: nil, at: NSRect.centered(ofSize: self.menu.size, in: frame).origin, in: nil)
+          }
+        } else {
+          fallthrough
+        }
       default:
         self.linkingMenuToStatusItem {
           self.menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
@@ -107,11 +110,29 @@ class Maccy: NSObject {
     }
   }
 
+  func select(position: Int) -> String? {
+    return menu.select(position: position)
+  }
+
+  func clearUnpinned(suppressClearAlert: Bool = false) {
+    withClearAlert(suppressClearAlert: suppressClearAlert) {
+      self.history.clearUnpinned()
+      self.menu.clearUnpinned()
+    }
+  }
+
   @objc
-  func performStatusItemClick(_ event: NSEvent?) {
+  private func performStatusItemClick(_ event: NSEvent?) {
     if let event = event {
-      if event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .option {
+      let modifierFlags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+
+      if modifierFlags.contains(.option) {
         UserDefaults.standard.ignoreEvents = !UserDefaults.standard.ignoreEvents
+
+        if modifierFlags.contains(.shift) {
+          UserDefaults.standard.ignoreOnlyNextEvent = UserDefaults.standard.ignoreEvents
+        }
+
         return
       }
     }
@@ -145,13 +166,9 @@ class Maccy: NSObject {
   }
 
   private func populateHeader() {
-    let headerItemView = FilterMenuItemView(frame: filterMenuRect)
-    headerItemView.title = "Maccy"
-
     let headerItem = NSMenuItem()
     headerItem.title = "Maccy"
-    headerItem.view = headerItemView
-    headerItem.isEnabled = false
+    headerItem.view = MenuHeader().view
 
     menu.addItem(headerItem)
   }
@@ -170,12 +187,13 @@ class Maccy: NSObject {
   }
 
   @objc
-  func menuItemAction(_ sender: NSMenuItem) {
+  private func menuItemAction(_ sender: NSMenuItem) {
     if let tag = MenuFooter(rawValue: sender.tag) {
       switch tag {
       case .about:
         Maccy.returnFocusToPreviousApp = false
         about.openAbout(sender)
+        Maccy.returnFocusToPreviousApp = true
       case .clear:
         clearUnpinned()
       case .clearAll:
@@ -185,16 +203,10 @@ class Maccy: NSObject {
       case .preferences:
         Maccy.returnFocusToPreviousApp = false
         preferencesWindowController.show()
+        Maccy.returnFocusToPreviousApp = true
       default:
         break
       }
-    }
-  }
-
-  func clearUnpinned(suppressClearAlert: Bool = false) {
-    withClearAlert(suppressClearAlert: suppressClearAlert) {
-      self.history.clearUnpinned()
-      self.menu.clearUnpinned()
     }
   }
 
@@ -206,13 +218,13 @@ class Maccy: NSObject {
   }
 
   private func withClearAlert(suppressClearAlert: Bool, _ closure: @escaping () -> Void) {
-    if suppressClearAlert || UserDefaults.standard.supressClearAlert {
+    if suppressClearAlert || UserDefaults.standard.suppressClearAlert {
       closure()
     } else {
       let alert = clearAlert
       if alert.runModal() == NSApplication.ModalResponse.alertFirstButtonReturn {
         if alert.suppressionButton?.state == .on {
-          UserDefaults.standard.supressClearAlert = true
+          UserDefaults.standard.suppressClearAlert = true
         }
         closure()
       }
@@ -305,7 +317,6 @@ class Maccy: NSObject {
   // and fallback to default NSMenu behavior by enabling
   // UserDefaults.standard.avoidTakingFocus.
   private func withFocus(_ closure: @escaping () -> Void) {
-    Maccy.returnFocusToPreviousApp = extraVisibleWindows.count == 0
     KeyboardShortcuts.disable(.popup)
 
     if UserDefaults.standard.avoidTakingFocus {
@@ -316,8 +327,9 @@ class Maccy: NSObject {
       Timer.scheduledTimer(withTimeInterval: 0.04, repeats: false) { _ in
         closure()
         KeyboardShortcuts.enable(.popup)
-        if Maccy.returnFocusToPreviousApp {
+        if Maccy.returnFocusToPreviousApp && self.extraVisibleWindows.count == 0 {
           NSApp.hide(self)
+          Maccy.returnFocusToPreviousApp = true
         }
       }
     }

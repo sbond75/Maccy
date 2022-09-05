@@ -4,6 +4,8 @@ import AppKit
 // Custom menu supporting "search-as-you-type" based on https://github.com/mikekazakov/MGKMenuWithFilter.
 // swiftlint:disable type_body_length
 class Menu: NSMenu, NSMenuDelegate {
+  static let menuWidth = 300
+
   class IndexedItem: NSObject {
     var value: String
     var title: String { item.title }
@@ -19,7 +21,6 @@ class Menu: NSMenu, NSMenuDelegate {
   }
 
   public let maxHotKey = 9
-  public let menuWidth = 300
 
   public var firstUnpinnedHistoryMenuItem: HistoryMenuItem? {
     historyMenuItems.first(where: { !$0.isPinned })
@@ -71,7 +72,7 @@ class Menu: NSMenu, NSMenuDelegate {
     self.history = history
     self.clipboard = clipboard
     self.delegate = self
-    self.minimumWidth = CGFloat(menuWidth)
+    self.minimumWidth = CGFloat(Menu.menuWidth)
   }
 
   func menuWillOpen(_ menu: NSMenu) {
@@ -90,7 +91,7 @@ class Menu: NSMenu, NSMenuDelegate {
   func buildItems() {
     clearAll()
 
-    for item in Sorter(by: UserDefaults.standard.sortBy).sort(history.all) {
+    for item in history.all {
       let menuItems = buildMenuItems(item)
       if let menuItem = menuItems.first {
         indexedItems.append(IndexedItem(value: menuItem.value,
@@ -102,7 +103,7 @@ class Menu: NSMenu, NSMenuDelegate {
   }
 
   func add(_ item: HistoryItem) {
-    let sortedItems = Sorter(by: UserDefaults.standard.sortBy).sort(history.all)
+    let sortedItems = history.all
     guard let insertionIndex = sortedItems.firstIndex(where: { $0 == item }) else {
       return
     }
@@ -185,53 +186,57 @@ class Menu: NSMenu, NSMenuDelegate {
     highlight(filter.isEmpty ? firstUnpinnedHistoryMenuItem : historyMenuItems.first)
   }
 
-  func select() {
+  func select(_ searchQuery: String) {
     var itemsToSelect: [HistoryMenuItem] = []
-    guard let highlightedItem = highlightedItem as? HistoryMenuItem else {
-      return
-    }
-
-    let markedItems = indexedItems.filter({ $0.isMarked })
-    if markedItems.isEmpty {
-      itemsToSelect.append(highlightedItem)
-    } else {
-      markedItems.forEach { markedItem in
-        (markedItem.menuItems as [HistoryMenuItem]).forEach { historyMenuItem in
-          if historyMenuItem.type == highlightedItem.type {
-            itemsToSelect.append(historyMenuItem)
+    if let highlightedItem = highlightedItem as? HistoryMenuItem {
+      let markedItems = indexedItems.filter({ $0.isMarked })
+      if markedItems.isEmpty {
+        itemsToSelect.append(highlightedItem)
+      } else {
+        markedItems.forEach { markedItem in
+          (markedItem.menuItems as [HistoryMenuItem]).forEach { historyMenuItem in
+            if historyMenuItem.type == highlightedItem.type {
+              itemsToSelect.append(historyMenuItem)
+            }
           }
         }
       }
-    }
-    
-    DispatchQueue.main.async {
-      itemsToSelect.forEach {
-        $0.select()
-        usleep(100000)
+
+      DispatchQueue.main.async {
+        itemsToSelect.forEach {
+          $0.select()
+          usleep(100000)
+        }
       }
-    }
 
-    cancelTracking()
-  }
-
-  func selectPrevious(alt: Bool) {
-    if !highlightNext(items.reversed(), alt: alt) {
-      selectLast(alt: alt) // start from the end after reaching the first item
+      cancelTrackingWithoutAnimation()
+    } else if !searchQuery.isEmpty && historyMenuItems.isEmpty {
+      clipboard.copy(searchQuery)
+      updateFilter(filter: searchQuery)
+      select(searchQuery)
     }
   }
 
-  func selectNext(alt: Bool) {
-    if !highlightNext(items, alt: alt) {
-      selectFirst(alt: alt) // start from the beginning after reaching the last item
+  func select(position: Int) -> String? {
+    guard indexedItems.count > position,
+          let item = indexedItems[position].menuItems.first else {
+      return nil
+    }
+
+    performActionForItem(at: index(of: item))
+    return indexedItems[position].value
+  }
+
+  func selectPrevious() {
+    if !highlightNext(items.reversed()) {
+      highlight(highlightableItems(items).last) // start from the end after reaching the first item
     }
   }
 
-  func selectFirst(alt: Bool = false) {
-    highlight(highlightableItems(items, alt: alt).first)
-  }
-
-  func selectLast(alt: Bool = false) {
-    highlight(highlightableItems(items, alt: alt).last)
+  func selectNext() {
+    if !highlightNext(items) {
+      highlight(highlightableItems(items).first) // start from the beginning after reaching the last item
+    }
   }
 
   func toggleMark() {
@@ -290,13 +295,13 @@ class Menu: NSMenu, NSMenuDelegate {
     highlight(items[firstMenuItemToRemoveIndex])
   }
 
-  func pinOrUnpin() {
+  func pinOrUnpin() -> Bool {
     guard let altItemToPin = highlightedItem as? HistoryMenuItem else {
-      return
+      return false
     }
 
     guard let historyItem = indexedItems.first(where: { $0.item == altItemToPin.item }) else {
-      return
+      return false
     }
 
     if altItemToPin.isPinned {
@@ -314,7 +319,7 @@ class Menu: NSMenu, NSMenuDelegate {
 
     history.update(altItemToPin.item)
 
-    let sortedItems = Sorter(by: UserDefaults.standard.sortBy).sort(history.all)
+    let sortedItems = history.all
     if let newIndex = sortedItems.firstIndex(where: { $0 == altItemToPin.item }) {
       if let removeIndex = indexedItems.firstIndex(of: historyItem) {
         indexedItems.remove(at: removeIndex)
@@ -334,6 +339,8 @@ class Menu: NSMenu, NSMenuDelegate {
       updateFilter(filter: "") // show all items
       highlight(historyItem.menuItems.first)
     }
+
+    return true
   }
 
   func resizeImageMenuItems() {
@@ -342,8 +349,8 @@ class Menu: NSMenu, NSMenuDelegate {
     }
   }
 
-  private func highlightNext(_ items: [NSMenuItem], alt: Bool) -> Bool {
-    let highlightableItems = self.highlightableItems(items, alt: alt)
+  private func highlightNext(_ items: [NSMenuItem]) -> Bool {
+    let highlightableItems = self.highlightableItems(items)
     let currentHighlightedItem = highlightedItem ?? highlightableItems.first
     var itemsIterator = highlightableItems.makeIterator()
     while let item = itemsIterator.next() {
@@ -357,17 +364,17 @@ class Menu: NSMenu, NSMenuDelegate {
     return false
   }
 
-  private func highlightableItems(_ items: [NSMenuItem], alt: Bool = false) -> [NSMenuItem] {
-    return items.filter { !$0.isSeparatorItem && $0.isEnabled && $0.isAlternate == alt }
+  private func highlightableItems(_ items: [NSMenuItem]) -> [NSMenuItem] {
+    return items.filter { !$0.isSeparatorItem && $0.isEnabled && !$0.isHidden }
   }
 
   private func highlight(_ itemToHighlight: NSMenuItem?) {
     let highlightItemSelector = NSSelectorFromString("highlightItem:")
-    // we need to highlight filter menu item to force menu redrawing
-    // when it has more items that can fit into the screen height
-    // and scrolling items are added to the top and bottom of menu
-    perform(highlightItemSelector, with: items.first)
     if let item = itemToHighlight {
+      // we need to highlight filter menu item to force menu redrawing
+      // when it has more items that can fit into the screen height
+      // and scrolling items are added to the top and bottom of menu
+      perform(highlightItemSelector, with: items.first)
       if items.contains(item) {
         perform(highlightItemSelector, with: item)
       }
@@ -439,7 +446,7 @@ class Menu: NSMenu, NSMenuDelegate {
       if !historyMenuItems.contains(historyItem) {
         limit += 1
         if let lastItem = lastUnpinnedHistoryMenuItem {
-          insertItem(historyItem, at: index(of: lastItem))
+          insertItem(historyItem, at: index(of: lastItem) + 1)
         }
       }
       if maxVisibleItems == limit {

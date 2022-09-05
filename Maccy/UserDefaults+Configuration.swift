@@ -10,6 +10,7 @@ extension UserDefaults {
     static let hideSearch = "hideSearch"
     static let hideTitle = "hideTitle"
     static let ignoreEvents = "ignoreEvents"
+    static let ignoreOnlyNextEvent = "ignoreOnlyNextEvent"
     static let ignoredApps = "ignoredApps"
     static let ignoredPasteboardTypes = "ignoredPasteboardTypes"
     static let imageMaxHeight = "imageMaxHeight"
@@ -24,7 +25,7 @@ extension UserDefaults {
     static let showRecentCopyInMenuBar = "showRecentCopyInMenuBar"
     static let size = "historySize"
     static let sortBy = "sortBy"
-    static let supressClearAlert = "supressClearAlert"
+    static let suppressClearAlert = "suppressClearAlert"
 
     static var showInStatusBar: String {
       ProcessInfo.processInfo.arguments.contains("ui-testing") ? "showInStatusBarUITests" : "showInStatusBar"
@@ -46,7 +47,6 @@ extension UserDefaults {
     static let showInStatusBar = true
     static let size = 200
     static let sortBy = "lastCopiedAt"
-    static let storage: [HistoryItemOld] = []
   }
 
   public var avoidTakingFocus: Bool {
@@ -90,6 +90,11 @@ extension UserDefaults {
   @objc dynamic public var ignoreEvents: Bool {
     get { bool(forKey: Keys.ignoreEvents) }
     set { set(newValue, forKey: Keys.ignoreEvents) }
+  }
+
+  public var ignoreOnlyNextEvent: Bool {
+    get { bool(forKey: Keys.ignoreOnlyNextEvent) }
+    set { set(newValue, forKey: Keys.ignoreOnlyNextEvent) }
   }
 
   public var ignoredApps: [String] {
@@ -167,22 +172,8 @@ extension UserDefaults {
     set { set(newValue, forKey: Keys.sortBy) }
   }
 
-  // swiftlint:disable force_try
-  public var storage: [HistoryItemOld] {
-    get {
-      if let storedArray = UserDefaults.standard.object(forKey: Keys.storage) as? Data {
-        return try! PropertyListDecoder().decode([HistoryItemOld].self, from: storedArray)
-      } else {
-        return Values.storage
-      }
-    }
-
-    set { set(try! PropertyListEncoder().encode(newValue), forKey: Keys.storage) }
-  }
-  // swiftlint:enable force_try
-
-  public var supressClearAlert: Bool {
-    get { bool(forKey: Keys.supressClearAlert) }
-    set { set(newValue, forKey: Keys.supressClearAlert) }
+  public var suppressClearAlert: Bool {
+    get { bool(forKey: Keys.suppressClearAlert) }
+    set { set(newValue, forKey: Keys.suppressClearAlert) }
   }
 }

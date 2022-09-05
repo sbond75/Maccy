@@ -10,6 +10,7 @@ class HistoryMenuItem: NSMenuItem {
 
   private let tooltipMaxLength = 5_000
   private let imageMaxWidth: CGFloat = 340.0
+  private let imagePasteboardTypes = [.tiff, .png, NSPasteboard.PasteboardType(rawValue: "public.jpeg")]
 
   private let highlightFont: NSFont = {
     if #available(macOS 11, *) {
@@ -125,7 +126,7 @@ class HistoryMenuItem: NSMenuItem {
   }
 
   private func isImage(_ item: HistoryItem) -> Bool {
-    return contentData(item, [.tiff, .png]) != nil
+    return contentData(item, imagePasteboardTypes) != nil
   }
 
   private func isFile(_ item: HistoryItem) -> Bool {
@@ -137,7 +138,7 @@ class HistoryMenuItem: NSMenuItem {
   }
 
   private func loadImage(_ item: HistoryItem) {
-    if let contentData = contentData(item, [.tiff, .png]) {
+    if let contentData = contentData(item, imagePasteboardTypes) {
       if let image = NSImage(data: contentData) {
         if image.size.width > imageMaxWidth {
           image.size.height = image.size.height / (image.size.width / imageMaxWidth)
@@ -206,13 +207,37 @@ class HistoryMenuItem: NSMenuItem {
   }
 
   private func defaultTooltip(_ item: HistoryItem) -> String {
-    return """
-    \(NSLocalizedString("first_copy_time_tooltip", comment: "")): \(formatDate(item.firstCopiedAt))
-    \(NSLocalizedString("last_copy_time_tooltip", comment: "")): \(formatDate(item.lastCopiedAt))
-    \(NSLocalizedString("number_of_copies_tooltip", comment: "")): \(item.numberOfCopies)
+    var lines: [String] = []
+    if let bundle = item.application, let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundle) {
+      lines.append(
+        [
+          NSLocalizedString("copy_application_tooltip", comment: ""),
+          url.deletingPathExtension().lastPathComponent
+        ].joined(separator: ": ")
+      )
+    }
+    lines.append(
+      [
+        NSLocalizedString("first_copy_time_tooltip", comment: ""),
+        formatDate(item.firstCopiedAt)
+      ].joined(separator: ": ")
+    )
+    lines.append(
+      [
+        NSLocalizedString("last_copy_time_tooltip", comment: ""),
+        formatDate(item.lastCopiedAt)
+      ].joined(separator: ": ")
+    )
+    lines.append(
+      [
+        NSLocalizedString("number_of_copies_tooltip", comment: ""),
+        String(item.numberOfCopies)
+      ].joined(separator: ": ")
+    )
+    lines.append("")
+    lines.append(NSLocalizedString("history_item_tooltip", comment: ""))
 
-    \(NSLocalizedString("history_item_tooltip", comment: ""))
-    """
+    return lines.joined(separator: "\n")
   }
 
   private func formatDate(_ date: Date) -> String {
