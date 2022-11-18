@@ -7,7 +7,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: norio-nomura/action-swiftlint@3.2.1
       - uses: mxcl/xcodebuild@v1
         with:
           authentication-key-base64: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
