@@ -11,6 +11,8 @@ jobs:
         continue-on-error: true
       - uses: mxcl/xcodebuild@v1.11.0
         with:
+          code-sign-certificate: ${{ secrets.CERTIFICATE_BASE64 }}
+          code-sign-certificate-passphrase: ${{ secrets.CERTIFICATE_PASSPHRASE }}
           scheme: Maccy
       - uses: OrbitalOwen/desktop-screenshot-action@0.1
         with:
