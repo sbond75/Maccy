@@ -15,5 +15,6 @@ jobs:
           code-sign-certificate-passphrase: ${{ secrets.CERTIFICATE_PASSPHRASE }}
           scheme: Maccy
       - uses: OrbitalOwen/desktop-screenshot-action@0.1
+        if: failure()
         with:
           file-name: screenshot.jpg
