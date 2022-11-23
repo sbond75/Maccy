@@ -4,10 +4,11 @@ on: push
 jobs:
   build-test:
     name: Build and Test
-    runs-on: macos-12
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
       - run: automationmodetool
+        continue-on-error: true
       - uses: mxcl/xcodebuild@v1.11.0
         with:
           authentication-key-base64: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
