@@ -11,9 +11,6 @@ jobs:
         continue-on-error: true
       - uses: mxcl/xcodebuild@v1.11.0
         with:
-          authentication-key-base64: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
-          authentication-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          authentication-key-issuer-id: ${{ secrets.APP_STORE_CONNECT_KEY_ISSER_ID }}
           scheme: Maccy
       - uses: OrbitalOwen/desktop-screenshot-action@0.1
         with:
