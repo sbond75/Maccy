@@ -1310,7 +1310,7 @@
 				DA0EE7BE204657840025FC60 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		DA360DB71E3DF137005C6F6B /* Build configuration list for PBXNativeTarget "MaccyTests" */ = {
 			isa = XCConfigurationList;
@@ -1319,7 +1319,7 @@
 				DA360DB91E3DF137005C6F6B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		DAEE383E1E3DBEB100DD2966 /* Build configuration list for PBXProject "Maccy" */ = {
 			isa = XCConfigurationList;
@@ -1328,7 +1328,7 @@
 				DAEE384F1E3DBEB100DD2966 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		DAEE38501E3DBEB100DD2966 /* Build configuration list for PBXNativeTarget "Maccy" */ = {
 			isa = XCConfigurationList;
@@ -1337,7 +1337,7 @@
 				DAEE38521E3DBEB100DD2966 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 
