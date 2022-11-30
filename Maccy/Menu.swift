@@ -330,15 +330,15 @@ class Menu: NSMenu, NSMenuDelegate {
   }
 
   private func clear(_ itemsToClear: [HistoryMenuItem]) {
-    itemsToClear.forEach({ menuItem in
-      if items.contains(menuItem) {
-        removeItem(menuItem)
-      }
-
-      if let removeIndex = indexedItems.firstIndex(where: { $0.item == menuItem.item }) {
-        indexedItems.remove(at: removeIndex)
-      }
-    })
+//    itemsToClear.forEach({ menuItem in
+//      if items.contains(menuItem) {
+//        removeItem(menuItem)
+//      }
+//
+//      if let removeIndex = indexedItems.firstIndex(where: { $0.item == menuItem.item }) {
+//        indexedItems.remove(at: removeIndex)
+//      }
+//    })
   }
 
   private func updateUnpinnedItemsVisibility() {
